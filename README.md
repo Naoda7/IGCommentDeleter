@@ -18,7 +18,7 @@
 
 ### From GitHub (Manual)
 
-1. Download the `.xpi` file from the [Releases](https://github.com/yourusername/your-repo/releases) page
+1. Download the `.xpi` file from the [Releases](https://github.com/Naoda7/IGCommentDeleter/releases/tag/Extension) page
 2. Open Firefox and go to `about:addons`
 3. Click the ⚙️ gear icon > **Install Add-on from File**
 4. Choose the downloaded `.xpi` file and confirm
