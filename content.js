@@ -52,7 +52,7 @@
 
       if (modalDeleteBtn) await clickElement(modalDeleteBtn);
     } catch (err) {
-      console.error('Gagal menghapus komentar:', err.message);
+      console.error('Failed to delete comment:', err.message);
     }
   };
 
@@ -97,7 +97,7 @@
     }
 
     isDeleting = false;
-    triggerBtn.innerText = '🔁 Refresh Halaman';
+    triggerBtn.innerText = '🔁 Refresh Page';
     setButtonStyle(triggerBtn, 'refresh');
     triggerBtn.disabled = false;
   };
@@ -110,7 +110,7 @@
 
   const triggerBtn = document.createElement('button');
   triggerBtn.id = 'instaDeleteTrigger';
-  triggerBtn.innerText = '🚀 Hapus Komentar';
+  triggerBtn.innerText = '🚀 Delete Comment';
   document.body.appendChild(triggerBtn);
 
   const closeBtn = document.createElement('button');
@@ -187,9 +187,9 @@
       if (abortController) {
         abortController.abort();
         isDeleting = false;
-        triggerBtn.innerText = '🔁 Refresh Halaman';
+        triggerBtn.innerText = '🔁 Refresh Page';
         setButtonStyle(triggerBtn, 'refresh');
-        alert('❌ Proses dibatalkan!\nHalaman akan direfresh...');
+        alert('❌ Operation cancelled!\nThe page will be refreshed...');
         setTimeout(() => location.reload(), 1000);
       }
       return;
@@ -202,7 +202,7 @@
 
     console.clear();
     isDeleting = true;
-    triggerBtn.innerText = '⏳ Menghapus... (klik untuk batal)';
+    triggerBtn.innerText = '⏳Deleting... (click to cancel)';
     setButtonStyle(triggerBtn, 'deleting');
     closeBtn.remove();
     await deleteAllComments();
