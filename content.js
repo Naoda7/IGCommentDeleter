@@ -7,10 +7,9 @@
     return;
   }
 
-  const DELETION_BATCH_SIZE = 15;
+  const DELETION_BATCH_SIZE = 20;
   const DELAY_BETWEEN_ACTIONS_MS = 1000;
-  const DELAY_BETWEEN_CHECKBOX_CLICKS_MS = 300;
-  const WAIT_AFTER_DELETE_MS = 10000;
+  const DELAY_BETWEEN_CHECKBOX_CLICKS_MS = 100;
 
   let abortController;
   let isDeleting = false;
@@ -24,12 +23,12 @@
     element.click();
   };
 
-  const waitForElement = async (selector, timeout = 10000) => {
+  const waitForElement = async (selector, timeout = 30000) => {
     const start = Date.now();
     while (Date.now() - start < timeout) {
       const el = document.querySelector(selector);
       if (el) return el;
-      await delay(100);
+      await delay(500);
     }
     throw new Error(`Timeout: Element "${selector}" not found`);
   };
@@ -56,14 +55,6 @@
     }
   };
 
-  const waitForSelectButton = async () => {
-    for (let i = 0; i < 30; i++) {
-      const [, selectBtn] = document.querySelectorAll('[role="button"]');
-      if (selectBtn) return;
-      await delay(1000);
-    }
-  };
-
   const deleteAllComments = async () => {
     abortController = new AbortController();
     const signal = abortController.signal;
@@ -71,6 +62,8 @@
     while (true) {
       if (signal.aborted) break;
 
+      // Wait for select button to appear
+      const selectButtons = await waitForElement('[role="button"]');
       const [, selectBtn] = document.querySelectorAll('[role="button"]');
       if (!selectBtn) break;
 
@@ -81,6 +74,7 @@
       const checkboxes = document.querySelectorAll('[aria-label="Toggle checkbox"]');
       if (checkboxes.length === 0) break;
 
+      // Select comments in batch
       for (let i = 0; i < Math.min(DELETION_BATCH_SIZE, checkboxes.length); i++) {
         if (signal.aborted) break;
         await clickElement(checkboxes[i]);
@@ -91,9 +85,19 @@
       await delay(DELAY_BETWEEN_ACTIONS_MS);
       await deleteSelectedComments();
       if (signal.aborted) break;
-      await delay(WAIT_AFTER_DELETE_MS);
-      if (signal.aborted) break;
-      await waitForSelectButton();
+
+      // Wait for select button to reappear (dynamic waiting)
+      console.log('Waiting for select button to reappear...');
+      let selectBtnFound = false;
+      while (!selectBtnFound) {
+        const buttons = document.querySelectorAll('[role="button"]');
+        if (buttons.length >= 2) {
+          selectBtnFound = true;
+          await delay(5000); // Wait 5 seconds after button appears
+        } else {
+          await delay(500); // Check every 500ms
+        }
+      }
     }
 
     isDeleting = false;
@@ -102,6 +106,7 @@
     triggerBtn.disabled = false;
   };
 
+  // UI Elements
   const existingButton = document.getElementById('instaDeleteTrigger');
   if (existingButton) existingButton.remove();
 
@@ -110,7 +115,7 @@
 
   const triggerBtn = document.createElement('button');
   triggerBtn.id = 'instaDeleteTrigger';
-  triggerBtn.innerText = '🚀 Delete Comment';
+  triggerBtn.innerText = '🚀 Delete Comments';
   document.body.appendChild(triggerBtn);
 
   const closeBtn = document.createElement('button');
@@ -202,7 +207,7 @@
 
     console.clear();
     isDeleting = true;
-    triggerBtn.innerText = '⏳Deleting... (click to cancel)';
+    triggerBtn.innerText = '⏳ Deleting... (click to cancel)';
     setButtonStyle(triggerBtn, 'deleting');
     closeBtn.remove();
     await deleteAllComments();
