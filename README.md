@@ -8,7 +8,7 @@
 
 - Single-click start/stop process.
 - Works on the Instagram comment activity page.
-- Deletes up to 15 comments per page automatically.
+- Deletes up to 20 comments per page automatically.
 - Simple UI and easy to use.
 
 ---
@@ -16,6 +16,7 @@
 ## How to Install
 
 ### Firefox
+Firefox Add-ons [Releases](https://addons.mozilla.org/en-US/firefox/addon/ig-comment-deleter/).
 
 #### Manual Installation
 
