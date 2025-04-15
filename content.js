@@ -13,6 +13,7 @@
 
   let abortController;
   let isDeleting = false;
+  let lastDeletedCommentText = null;
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -33,8 +34,37 @@
     throw new Error(`Timeout: Element "${selector}" not found`);
   };
 
+  const isPageEmpty = () => {
+    const noResultsHeading = document.querySelector('[role="heading"][aria-label="No results"]');
+    if (noResultsHeading && noResultsHeading.textContent.includes("No results")) {
+      return true;
+    }
+    
+    const noCommentsHeading = document.querySelector('[role="heading"][aria-label="You haven\'t commented on anything"]');
+    if (noCommentsHeading) {
+      return true;
+    }
+    
+    const emptyStateContainer = document.querySelector('[data-testid="generic_container_empty_state"]');
+    if (emptyStateContainer) {
+      const emptyStateText = emptyStateContainer.innerText;
+      if (emptyStateText.includes("You haven't commented") || 
+          emptyStateText.includes("When you comment on a photo")) {
+        return true;
+      }
+    }
+
+    const disabledDeleteBtn = document.querySelector('[aria-label="Delete"][disabled]');
+    return !!disabledDeleteBtn;
+  };
+
   const deleteSelectedComments = async () => {
     try {
+      const selectedComments = document.querySelectorAll('[aria-label="Comment"]');
+      if (selectedComments.length > 0) {
+        lastDeletedCommentText = selectedComments[selectedComments.length - 1].innerText.trim();
+      }
+
       const deleteSpan = Array.from(document.querySelectorAll('span')).find(
         (span) => span.textContent.trim().toLowerCase() === 'delete'
       );
@@ -51,7 +81,7 @@
 
       if (modalDeleteBtn) await clickElement(modalDeleteBtn);
     } catch (err) {
-      console.error('Failed to delete comment:', err.message);
+      // Silent error (no console.log)
     }
   };
 
@@ -62,7 +92,14 @@
     while (true) {
       if (signal.aborted) break;
 
-      // Wait for select button to appear
+      if (isPageEmpty()) {
+        const message = lastDeletedCommentText 
+          ? `✅ All comments deleted successfully!\n\nLast comment:\n"${lastDeletedCommentText}"`
+          : '✅ All comments deleted successfully!';
+        showModal(message);
+        break;
+      }
+
       const selectButtons = await waitForElement('[role="button"]');
       const [, selectBtn] = document.querySelectorAll('[role="button"]');
       if (!selectBtn) break;
@@ -74,7 +111,6 @@
       const checkboxes = document.querySelectorAll('[aria-label="Toggle checkbox"]');
       if (checkboxes.length === 0) break;
 
-      // Select comments in batch
       for (let i = 0; i < Math.min(DELETION_BATCH_SIZE, checkboxes.length); i++) {
         if (signal.aborted) break;
         await clickElement(checkboxes[i]);
@@ -86,17 +122,24 @@
       await deleteSelectedComments();
       if (signal.aborted) break;
 
-      // Wait for select button to reappear (dynamic waiting)
-      console.log('Waiting for select button to reappear...');
+      await delay(1500);
+      
+      if (isPageEmpty()) {
+        const message = lastDeletedCommentText 
+          ? `✅ All comments deleted successfully!\n\nLast comment:\n"${lastDeletedCommentText}"`
+          : '✅ All comments deleted successfully!';
+        showModal(message);
+        break;
+      }
+
       let selectBtnFound = false;
-      while (!selectBtnFound) {
+      const startTime = Date.now();
+      while (!selectBtnFound && Date.now() - startTime < 10000) {
         const buttons = document.querySelectorAll('[role="button"]');
         if (buttons.length >= 2) {
           selectBtnFound = true;
-          await delay(5000); // Wait 5 seconds after button appears
-        } else {
-          await delay(500); // Check every 500ms
         }
+        await delay(500);
       }
     }
 
@@ -106,7 +149,6 @@
     triggerBtn.disabled = false;
   };
 
-  // UI Elements
   const existingButton = document.getElementById('instaDeleteTrigger');
   if (existingButton) existingButton.remove();
 
@@ -194,8 +236,8 @@
         isDeleting = false;
         triggerBtn.innerText = '🔁 Refresh Page';
         setButtonStyle(triggerBtn, 'refresh');
-        alert('❌ Operation cancelled!\nThe page will be refreshed...');
-        setTimeout(() => location.reload(), 1000);
+        showModal('❌ Operation canceled.\nPage will refresh...');
+        return;
       }
       return;
     }
@@ -205,7 +247,6 @@
       return;
     }
 
-    console.clear();
     isDeleting = true;
     triggerBtn.innerText = '⏳ Deleting... (click to cancel)';
     setButtonStyle(triggerBtn, 'deleting');
@@ -223,4 +264,95 @@
     else setButtonStyle(triggerBtn, 'deleting');
     setButtonStyle(closeBtn, 'close');
   });
+
+  const showModal = (message = 'No comments found.') => {
+    const modal = document.createElement('div');
+    modal.style = `
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    `;
+
+    const box = document.createElement('div');
+    box.style = `
+      background: rgba(255, 255, 255, 0.2);
+      padding: 28px 32px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 85%;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      backdropFilter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-out;
+    `;
+
+    const text = document.createElement('div');
+    text.innerText = message;
+    text.style = `
+      font-size: 16px; 
+      margin-bottom: 24px; 
+      color: #fff; 
+      white-space: pre-line;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      line-height: 1.5;
+    `;
+
+    const okBtn = document.createElement('button');
+    okBtn.innerText = 'OK';
+    okBtn.style = `
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    `;
+
+    okBtn.onmouseenter = () => {
+      okBtn.style.background = 'rgba(255, 255, 255, 0.25)';
+      okBtn.style.transform = 'translateY(-2px)';
+    };
+    okBtn.onmouseleave = () => {
+      okBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+      okBtn.style.transform = 'translateY(0)';
+    };
+
+    okBtn.onclick = () => {
+      modal.style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(() => {
+        modal.remove();
+        location.reload();
+      }, 250);
+    };
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(20px); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    box.appendChild(text);
+    box.appendChild(okBtn);
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+  };
 })();

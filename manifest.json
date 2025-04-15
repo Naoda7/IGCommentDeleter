@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "IG Comment Deleter",
-  "version": "1.0.3",
-  "description": "Automatically delete Instagram comment activity",
+  "name": "Instagram Comment Deleter",
+  "version": "1.0.6",
+  "description": "Auto-delete Instagram comment activity",
   "permissions": ["scripting", "tabs"],
   "host_permissions": ["https://www.instagram.com/*"],
   "action": {
-    "default_title": "IG Comment Deleter",
+    "default_title": "Instagram Comment Deleter",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "assets/icons/icon-16.png",
