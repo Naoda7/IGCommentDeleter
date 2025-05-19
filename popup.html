@@ -15,29 +15,51 @@
       margin: 0;
       padding: 16px;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9f9f9;
+      background: #1a1a1a;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
       gap: 16px;
+      color: #fff;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('https://images.unsplash.com/photo-1526273806334-d6f4c0fbe0d8?auto=format&fit=crop&w=800&q=60') center/cover no-repeat;
+      z-index: -2;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.4);
+      z-index: -1;
     }
 
     img {
-      width: auto;
-      height: auto;
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
     }
 
     h1 {
       font-size: 16px;
-      color: #333;
       margin: 0;
       text-align: center;
+      color: #ffffff;
     }
 
     p {
       font-size: 14px;
-      color: #555;
+      color: #ccc;
       text-align: center;
       margin: 0;
     }
@@ -47,22 +69,24 @@
       padding: 12px 16px;
       font-size: 14px;
       font-weight: bold;
-      border: none;
+      border: 2px solid #ff0033;
       border-radius: 10px;
+      background: transparent;
+      color: #ff0033;
       cursor: pointer;
-      background: linear-gradient(to right, #ed4956, #ff6f61);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 0 8px #ff0033;
+      transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
     }
 
     button:hover {
-      background: linear-gradient(to right, #e63946, #ff5a5f);
+      background-color: rgba(255, 0, 51, 0.1);
       transform: translateY(-2px);
+      box-shadow: 0 0 12px #ff0033, 0 0 24px #ff0033;
     }
 
     button:active {
       transform: scale(0.98);
+      box-shadow: 0 0 6px #ff0033, 0 0 12px #ff0033;
     }
 
     footer {
@@ -77,8 +101,8 @@
   <img src="assets/icons/icon-128.png" alt="Instagram Bot GIF">
   <h1>Instagram Comment Deleter</h1>
   <p>Auto-delete Instagram comment activity</p>
-  <button id="start">🤖Launch Bot</button>
-  <footer>v1.0.6</footer>
+  <button id="start">🤖 Launch Bot</button>
+  <footer>v1.0.7</footer>
 
   <script src="popup.js"></script>
 </body>

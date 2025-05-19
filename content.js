@@ -157,7 +157,7 @@
 
   const triggerBtn = document.createElement('button');
   triggerBtn.id = 'instaDeleteTrigger';
-  triggerBtn.innerText = '🚀 Delete Comments';
+  triggerBtn.innerText = 'Delete Comments';
   document.body.appendChild(triggerBtn);
 
   const closeBtn = document.createElement('button');
@@ -168,7 +168,7 @@
   const setButtonStyle = (btn, state) => {
     const baseStyle = {
       position: 'fixed',
-      bottom: '60px',
+      bottom: '100px',
       zIndex: 9999,
       padding: window.innerWidth < 500 ? '10px 14px' : '14px 22px',
       fontSize: window.innerWidth < 500 ? '14px' : '16px',
@@ -178,7 +178,6 @@
       transition: 'all 0.3s ease',
       backdropFilter: 'blur(8px)',
       boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-      minWidth: window.innerWidth < 500 ? '160px' : '240px',
       maxWidth: '90vw',
     };
 
@@ -206,7 +205,7 @@
       },
       close: {
         position: 'fixed',
-        bottom: '60px',
+        bottom: '100px',
         right: '20px',
         zIndex: 9999,
         padding: window.innerWidth < 500 ? '10px 14px' : '14px 18px',
